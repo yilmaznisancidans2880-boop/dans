@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const path = require('path');
+const path = require('path');  // Path modülünü import ettik
 
 const app = express();
 app.use(cors());
@@ -15,7 +15,7 @@ const io = new Server(server, {
 // Static dosyaları sunmak için public klasörünü kullanıyoruz
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Anasayfa endpointi
+// Anasayfa endpointi (index.html dosyasını public klasöründen gönderiyoruz)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));  // public dizininden index.html dosyasını gönder
 });
@@ -39,8 +39,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// Render platformunda portu dinamik olarak ayarla
-const PORT = process.env.PORT || 3000;
+// Render platformunda portu dinamik olarak ayarla (10000 kullanabiliriz)
+const PORT = process.env.PORT || 10000;  // render için 10000, localde 3000 kullanıyoruz
 server.listen(PORT, () => {
   console.log(`Server ${PORT} portunda çalışıyor`);
 });
