@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const path = require('path');  // Path modülünü import ettik
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -20,6 +20,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));  // public dizininden index.html dosyasını gönder
 });
 
+// Mesajlar dizisi
 let messages = [];
 
 io.on("connection", (socket) => {
@@ -31,7 +32,7 @@ io.on("connection", (socket) => {
   // Yeni mesaj alındığında yayınla
   socket.on("chatMessage", (msg) => {
     messages.push(msg);
-    io.emit("chatMessage", msg);
+    io.emit("chatMessage", msg); // Yeni mesajı tüm bağlı kullanıcılara gönder
   });
 
   socket.on("disconnect", () => {
@@ -39,8 +40,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// Render platformunda portu dinamik olarak ayarla (10000 kullanabiliriz)
-const PORT = process.env.PORT || 10000;  // render için 10000, localde 3000 kullanıyoruz
+// Render platformunda portu dinamik olarak ayarla
+const PORT = process.env.PORT || 10000; // render için 10000, localde 3000 kullanıyoruz
 server.listen(PORT, () => {
   console.log(`Server ${PORT} portunda çalışıyor`);
 });
