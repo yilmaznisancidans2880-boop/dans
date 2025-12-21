@@ -12,12 +12,12 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-// Static dosyaları sunmak için
-app.use(express.static(path.join(__dirname, 'public'))); // public klasöründeki dosyaları sunuyoruz
+// Static dosyaları sunmak için public klasörünü kullanıyoruz
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Anasayfa endpointi
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));  // index.html dosyasını gönderiyor
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));  // public dizininden index.html dosyasını gönder
 });
 
 let messages = [];
