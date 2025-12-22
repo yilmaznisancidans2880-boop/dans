@@ -1,47 +1,85 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
-const path = require('path');
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(cors());
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "*" }
+  cors: {
+    origin: "*",
+  },
 });
 
-// Static dosyaları sunmak için public klasörünü kullanıyoruz
-app.use(express.static(path.join(__dirname, 'public')));
+// static dosyalar
+app.use(express.static(path.join(__dirname, "public")));
 
-// Anasayfa endpointi (index.html dosyasını public klasöründen gönderiyoruz)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));  // public dizininden index.html dosyasını gönder
+// anasayfa
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Mesajlar dizisi
+// === GERÇEK KULLANICILAR ===
+let users = [];
 let messages = [];
 
 io.on("connection", (socket) => {
-  console.log("Yeni kullanıcı bağlandı:", socket.id);
+  console.log("🟢 Bağlandı:", socket.id);
 
-  // Geçmiş mesajları gönder
+  // mevcut kullanıcıları gönder
+  socket.emit("users", users);
   socket.emit("initMessages", messages);
 
-  // Yeni mesaj alındığında yayınla
-  socket.on("chatMessage", (msg) => {
-    messages.push(msg);
-    io.emit("chatMessage", msg); // Yeni mesajı tüm bağlı kullanıcılara gönder
+  // kullanıcı katıldı
+  socket.on("join", (username) => {
+    const user = { id: socket.id, username };
+    users.push(user);
+
+    io.emit("users", users);
+    io.emit("chatMessage", {
+      username: "Sistem",
+      role: "admin",
+      content: `${username} sohbete katıldı 👋`,
+      time: new Date().toLocaleTimeString("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    });
   });
 
+  // mesaj
+  socket.on("chatMessage", (msg) => {
+    messages.push(msg);
+    io.emit("chatMessage", msg);
+  });
+
+  // ayrıldı
   socket.on("disconnect", () => {
-    console.log("Kullanıcı ayrıldı:", socket.id);
+    const user = users.find((u) => u.id === socket.id);
+    if (user) {
+      users = users.filter((u) => u.id !== socket.id);
+
+      io.emit("users", users);
+      io.emit("chatMessage", {
+        username: "Sistem",
+        role: "admin",
+        content: `${user.username} sohbetten ayrıldı 🚪`,
+        time: new Date().toLocaleTimeString("tr-TR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      });
+    }
+
+    console.log("🔴 Ayrıldı:", socket.id);
   });
 });
 
-// Render platformunda portu dinamik olarak ayarla
-const PORT = process.env.PORT || 10000; // render için 10000, localde 3000 kullanıyoruz
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
   console.log(`Server ${PORT} portunda çalışıyor`);
 });
