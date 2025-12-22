@@ -29,13 +29,14 @@ const bannedWords = ["küfür1","küfür2","argo1"];
 // =====================
 // QUIZ BOT AYARLARI
 // =====================
+const BOT_NAME = "Sevimli-Pisicik";
+const QUESTION_INTERVAL = 15000; // 15 saniye
+
+// 100 soru örneği (örnek birkaçını ekledim, sen dilediğin kadar ekleyebilirsin)
 const questions = [
-  { q: "Evrenin yaşının yaklaşık olarak kaç milyar yıl olduğu tahmin edilmektedir?", a: "13.8" },
-  { q: "Newton'un hareket yasalarından üçüncüsü nedir?", a: "etki-tepki" },
   { q: "İnsan DNA'sında kaç baz çifti bulunur?", a: "3 milyar" },
   { q: "Dünyada en uzun süre tahtta kalan monark kimdir?", a: "louis xiv" },
-   { q: "Kuantum mekaniğini kuran bilim insanı kimdir?", a: "Max Planck" },
-  { q: "Titanik gemisi hangi yılda battı?", a: "1912" },
+  { q: "Einstein'ın izafiyet teorisini hangi yılda yayınladı?", a: "1905" },
   { q: "İnsan vücudundaki en büyük organ hangisidir?", a: "Cilt" },
   { q: "Plüton gezegeni hangi yılda gezegen statüsünden çıkarıldı?", a: "2006" },
   { q: "En uzun süre yaşayan canlı türü hangisidir?", a: "Deniz kestanesi (Ocean quahog)" },
@@ -235,33 +236,45 @@ const questions = [
   { q: "İlk bilgisayar programcısı kimdir?", a: "Ada Lovelace" },
   { q: "Hidrojenin atom numarası kaçtır?", a: "1" },
   { q: "Fotosentez sırasında hangi gaz açığa çıkar?", a: "Oksijen" },
-  
+  { q: "Okyanusların en derin noktası neresidir?", a: "Mariana Çukuru" },
+  { q: "Dünya üzerindeki en büyük çöl hangisidir?", a: "Sahara" },
+  { q: "İlk bilgisayar programcısı kimdir?", a: "Ada Lovelace" },
+  { q: "Hidrojenin atom numarası kaçtır?", a: "1" },
+  { q: "Fotosentez sırasında hangi gaz açığa çıkar?", a: "Oksijen" }
 ];
 
-let currentQuestion = null;
+let currentIndex = -1;
 let answered = false;
 
-function sendQuizQuestion() {
+// =====================
+// SORU BAŞLATMA FONKSİYONU
+// =====================
+function askNextQuestion() {
+  currentIndex++;
+  if(currentIndex >= questions.length) currentIndex = 0; // sorular sırayla dönsün
+
+  const question = questions[currentIndex];
   answered = false;
-  currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+
   io.emit("chatMessage", {
-    username: "Sevimli-Pisicik",
+    username: BOT_NAME,
     role: "bot",
-    content: "Hazırsanız soru geliyor: " + currentQuestion.q,
+    content: "Hazırsanız soru geliyor: " + question.q,
     time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
   });
 
+  // 15 saniye bekle, cevap yoksa doğru cevabı göster ve sonraki soru
   setTimeout(() => {
     if(!answered){
       io.emit("chatMessage", {
-        username: "Sevimli-Pisicik",
+        username: BOT_NAME,
         role: "bot",
-        content: "Süre doldu! Doğru cevap: " + currentQuestion.a,
+        content: "Süre doldu! Doğru cevap: " + question.a,
         time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
       });
     }
-    sendQuizQuestion(); // yeni soru başlat
-  }, 15000); // 15 saniye
+    askNextQuestion();
+  }, QUESTION_INTERVAL);
 }
 
 // =====================
@@ -302,18 +315,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chatMessage", (msg) => {
-    // yasaklı kelime kontrol
     if(bannedWords.some(word => msg.content.toLowerCase().includes(word))) {
       socket.emit("kicked", { reason: "Küfür kullandığınız için atıldınız." });
       socket.disconnect();
       return;
     }
 
-    // Quiz cevabı kontrolü
-    if(currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()) {
+    // Quiz cevabı kontrol
+    const currentQuestion = questions[currentIndex];
+    if(currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()){
       answered = true;
       io.emit("chatMessage", {
-        username: "Sevimli-Pisicik",
+        username: BOT_NAME,
         role: "bot",
         content: `Tebrikler ${msg.username}! Doğru cevabı bildiniz 🎉`,
         time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
@@ -354,7 +367,7 @@ io.on("connection", (socket) => {
 // =====================
 // BOTU BAŞLAT
 // =====================
-sendQuizQuestion();
+askNextQuestion();
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
