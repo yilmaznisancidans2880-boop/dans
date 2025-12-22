@@ -24,7 +24,7 @@ let users = [];
 let messages = [];
 
 // yasaklı kelimeler
-const bannedWords = ["küfür1","küfür2","argo1"];
+const bannedWords = ["küfür1", "küfür2", "argo1"];
 
 // =====================
 // Sevimli-Kedicik BOT AYARLARI
@@ -244,40 +244,37 @@ const questions = [
 ];
 
 let currentQuestion = null;
+let currentTimeout = null;
 let answered = false;
-let lastQuestionIndex = -1;
 
-// =====================
-// SORU BAŞLATMA FONKSİYONU
-// =====================
-function askNextQuestion() {
-  // Rastgele soru seç, ardışık tekrarı engelle
-  let index;
-  do {
-    index = Math.floor(Math.random() * questions.length);
-  } while (index === lastQuestionIndex && questions.length > 1);
-
-  lastQuestionIndex = index;
-  currentQuestion = questions[index];
+function sendNextQuestion() {
   answered = false;
+
+  // Rastgele soru seç, önceki sorudan farklı olsun
+  let nextQuestion;
+  do {
+    nextQuestion = questions[Math.floor(Math.random() * questions.length)];
+  } while (currentQuestion && nextQuestion.q === currentQuestion.q);
+
+  currentQuestion = nextQuestion;
 
   io.emit("chatMessage", {
     username: BOT_NAME,
     role: "bot",
     content: "Hazırsanız soru geliyor: " + currentQuestion.q,
-    time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+    time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
   });
 
-  setTimeout(() => {
-    if(!answered){
+  currentTimeout = setTimeout(() => {
+    if (!answered) {
       io.emit("chatMessage", {
         username: BOT_NAME,
         role: "bot",
         content: "Süre doldu! Doğru cevap: " + currentQuestion.a,
-        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+        time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
       });
     }
-    askNextQuestion(); // sonraki soru
+    sendNextQuestion();
   }, QUESTION_INTERVAL);
 }
 
@@ -291,12 +288,12 @@ io.on("connection", (socket) => {
   socket.emit("initMessages", messages);
 
   socket.on("join", ({ username, password }) => {
-    if(username === "LoverBoy") {
-      if(users.some(u => u.username === "LoverBoy")) {
+    if (username === "LoverBoy") {
+      if (users.some(u => u.username === "LoverBoy")) {
         socket.emit("joinError", "LoverBoy nicki zaten kullanılıyor!");
         return;
       }
-      if(password !== "3530657Ynz") {
+      if (password !== "3530657Ynz") {
         socket.emit("joinError", "LoverBoy şifresi hatalı!");
         return;
       }
@@ -314,26 +311,32 @@ io.on("connection", (socket) => {
       username: "Sistem",
       role: "admin",
       content: `${username} sohbete katıldı 👋`,
-      time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+      time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
     });
   });
 
   socket.on("chatMessage", (msg) => {
-    if(bannedWords.some(word => msg.content.toLowerCase().includes(word))) {
+    if (bannedWords.some(word => msg.content.toLowerCase().includes(word))) {
       socket.emit("kicked", { reason: "Küfür kullandığınız için atıldınız." });
       socket.disconnect();
       return;
     }
 
     // Quiz cevabı kontrolü
-    if(currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()){
+    if (currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()) {
       answered = true;
+
       io.emit("chatMessage", {
         username: BOT_NAME,
         role: "bot",
         content: `Tebrikler ${msg.username}! Doğru cevabı bildiniz 🎉`,
-        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+        time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
       });
+
+      // Mevcut timeout'u iptal et ve 15 saniye sonra yeni soru
+      clearTimeout(currentTimeout);
+      setTimeout(sendNextQuestion, QUESTION_INTERVAL);
+      return;
     }
 
     messages.push(msg);
@@ -342,10 +345,10 @@ io.on("connection", (socket) => {
 
   socket.on("kickUser", (userId) => {
     const adminUser = users.find(u => u.id === socket.id && u.role === "admin");
-    if(!adminUser) return;
+    if (!adminUser) return;
 
     const target = users.find(u => u.id === userId);
-    if(target) {
+    if (target) {
       io.to(userId).emit("kicked", { reason: "Admin tarafından atıldınız." });
       io.sockets.sockets.get(userId)?.disconnect();
     }
@@ -353,14 +356,14 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     const user = users.find(u => u.id === socket.id);
-    if(user) {
+    if (user) {
       users = users.filter(u => u.id !== socket.id);
       io.emit("users", users);
       io.emit("chatMessage", {
-        username:"Sistem",
-        role:"admin",
-        content:`${user.username} sohbetten ayrıldı 🚪`,
-        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+        username: "Sistem",
+        role: "admin",
+        content: `${user.username} sohbetten ayrıldı 🚪`,
+        time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
       });
     }
     console.log("🔴 Ayrıldı:", socket.id);
@@ -370,7 +373,7 @@ io.on("connection", (socket) => {
 // =====================
 // BOTU BAŞLAT
 // =====================
-askNextQuestion();
+sendNextQuestion();
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
