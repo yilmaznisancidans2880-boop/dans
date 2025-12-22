@@ -10,52 +10,45 @@ app.use(cors());
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
+  cors: { origin: "*" },
 });
 
-// static dosyalar
 app.use(express.static(path.join(__dirname, "public")));
 
-// anasayfa
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// === GERÇEK KULLANICILAR ===
+// kullanıcı ve mesaj listesi
 let users = [];
 let messages = [];
 
 // yasaklı kelimeler
-const bannedWords = ["küfür1", "küfür2", "argo1"]; // istediğin kadar ekle
+const bannedWords = ["küfür1","küfür2","argo1"];
 
 io.on("connection", (socket) => {
   console.log("🟢 Bağlandı:", socket.id);
 
-  // mevcut kullanıcıları gönder
   socket.emit("users", users);
   socket.emit("initMessages", messages);
 
-  // kullanıcı katıldı
   socket.on("join", ({ username, password }) => {
     // LoverBoy kontrolü
     if(username === "LoverBoy") {
-      const exists = users.some(u => u.username === "LoverBoy");
-      if(exists) {
+      if(users.some(u => u.username === "LoverBoy")) {
         socket.emit("joinError", "LoverBoy nicki zaten kullanılıyor!");
         return;
       }
       if(password !== "3530657Ynz") {
-        socket.emit("joinError", "LoverBoy için şifre hatalı!");
+        socket.emit("joinError", "LoverBoy şifresi hatalı!");
         return;
       }
     }
 
-    const user = { 
-      id: socket.id, 
-      username, 
-      role: username === "LoverBoy" ? "admin" : "user" 
+    const user = {
+      id: socket.id,
+      username,
+      role: username === "LoverBoy" ? "admin" : "user"
     };
     users.push(user);
 
@@ -64,30 +57,23 @@ io.on("connection", (socket) => {
       username: "Sistem",
       role: "admin",
       content: `${username} sohbete katıldı 👋`,
-      time: new Date().toLocaleTimeString("tr-TR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      time: new Date().toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" })
     });
   });
 
-  // mesaj
   socket.on("chatMessage", (msg) => {
-    // küfür kontrolü
-    if (bannedWords.some(word => msg.content.toLowerCase().includes(word))) {
+    if(bannedWords.some(word => msg.content.toLowerCase().includes(word))) {
       socket.emit("kicked", { reason: "Küfür kullandığınız için atıldınız." });
       socket.disconnect();
       return;
     }
-
     messages.push(msg);
     io.emit("chatMessage", msg);
   });
 
-  // admin kullanıcı birini atarsa
   socket.on("kickUser", (userId) => {
     const adminUser = users.find(u => u.id === socket.id && u.role === "admin");
-    if(!adminUser) return; // admin değilse işlem yok
+    if(!adminUser) return;
 
     const target = users.find(u => u.id === userId);
     if(target) {
@@ -96,29 +82,21 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ayrıldı
   socket.on("disconnect", () => {
-    const user = users.find((u) => u.id === socket.id);
-    if (user) {
-      users = users.filter((u) => u.id !== socket.id);
-
+    const user = users.find(u => u.id === socket.id);
+    if(user) {
+      users = users.filter(u => u.id !== socket.id);
       io.emit("users", users);
       io.emit("chatMessage", {
-        username: "Sistem",
-        role: "admin",
-        content: `${user.username} sohbetten ayrıldı 🚪`,
-        time: new Date().toLocaleTimeString("tr-TR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        username:"Sistem",
+        role:"admin",
+        content:`${user.username} sohbetten ayrıldı 🚪`,
+        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
       });
     }
-
     console.log("🔴 Ayrıldı:", socket.id);
   });
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => {
-  console.log(`Server ${PORT} portunda çalışıyor`);
-});
+server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
