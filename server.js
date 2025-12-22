@@ -26,6 +26,46 @@ let messages = [];
 // yasaklı kelimeler
 const bannedWords = ["küfür1","küfür2","argo1"];
 
+// =====================
+// QUIZ BOT AYARLARI
+// =====================
+const questions = [
+  { q: "Evrenin yaşının yaklaşık olarak kaç milyar yıl olduğu tahmin edilmektedir?", a: "13.8" },
+  { q: "Newton'un hareket yasalarından üçüncüsü nedir?", a: "etki-tepki" },
+  { q: "İnsan DNA'sında kaç baz çifti bulunur?", a: "3 milyar" },
+  { q: "Dünyada en uzun süre tahtta kalan monark kimdir?", a: "louis xiv" },
+  { q: "Einstein'ın izafiyet teorisini hangi yılda yayınladı?", a: "1905" }
+];
+
+let currentQuestion = null;
+let answered = false;
+
+function sendQuizQuestion() {
+  answered = false;
+  currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+  io.emit("chatMessage", {
+    username: "QuizBot",
+    role: "bot",
+    content: "Hazırsanız soru geliyor: " + currentQuestion.q,
+    time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+  });
+
+  setTimeout(() => {
+    if(!answered){
+      io.emit("chatMessage", {
+        username: "QuizBot",
+        role: "bot",
+        content: "Süre doldu! Doğru cevap: " + currentQuestion.a,
+        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+      });
+    }
+    sendQuizQuestion(); // yeni soru başlat
+  }, 10000); // 10 saniye
+}
+
+// =====================
+// SOCKET.IO BAĞLANTI
+// =====================
 io.on("connection", (socket) => {
   console.log("🟢 Bağlandı:", socket.id);
 
@@ -33,7 +73,6 @@ io.on("connection", (socket) => {
   socket.emit("initMessages", messages);
 
   socket.on("join", ({ username, password }) => {
-    // LoverBoy kontrolü
     if(username === "LoverBoy") {
       if(users.some(u => u.username === "LoverBoy")) {
         socket.emit("joinError", "LoverBoy nicki zaten kullanılıyor!");
@@ -57,16 +96,29 @@ io.on("connection", (socket) => {
       username: "Sistem",
       role: "admin",
       content: `${username} sohbete katıldı 👋`,
-      time: new Date().toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" })
+      time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
     });
   });
 
   socket.on("chatMessage", (msg) => {
+    // yasaklı kelime kontrol
     if(bannedWords.some(word => msg.content.toLowerCase().includes(word))) {
       socket.emit("kicked", { reason: "Küfür kullandığınız için atıldınız." });
       socket.disconnect();
       return;
     }
+
+    // Quiz cevabı kontrolü
+    if(currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()) {
+      answered = true;
+      io.emit("chatMessage", {
+        username: "SevimliKedicik",
+        role: "bot",
+        content: `Tebrikler ${msg.username}! Doğru cevabı bildiniz 🎉`,
+        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+      });
+    }
+
     messages.push(msg);
     io.emit("chatMessage", msg);
   });
@@ -97,6 +149,11 @@ io.on("connection", (socket) => {
     console.log("🔴 Ayrıldı:", socket.id);
   });
 });
+
+// =====================
+// BOTU BAŞLAT
+// =====================
+sendQuizQuestion();
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
