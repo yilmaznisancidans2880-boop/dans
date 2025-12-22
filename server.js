@@ -1,54 +1,36 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-const path = require("path");
-
-const app = express();
-app.use(cors());
-
-const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: { origin: "*" },
-});
-
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// kullanıcı ve mesaj listesi
-let users = [];
-let messages = [];
-
-// yasaklı kelimeler
-const bannedWords = ["küfür1","küfür2","argo1"];
-
 // =====================
 // Sevimli-Kedicik BOT AYARLARI
 // =====================
 const BOT_NAME = "Sevimli-Kedicik";
 const QUESTION_INTERVAL = 15000; // 15 saniye
-let questionIndex = 0;
+let currentQuestion = null;
+let currentTimeout = null;
+let answered = false;
 
 const questions = [
   { q: "İnsan DNA'sında kaç baz çifti bulunur?", a: "3 milyar" },
   { q: "Dünyada en uzun süre tahtta kalan monark kimdir?", a: "louis xiv" },
   { q: "Einstein'ın izafiyet teorisini hangi yılda yayınladı?", a: "1905" },
-  { q: "İnsan vücudundaki en büyük organ hangisidir?", a: "Cilt" },
+  { q: "Newton'un hareket yasalarından üçüncüsü nedir?", a: "etki-tepki" },
   { q: "Plüton gezegeni hangi yılda gezegen statüsünden çıkarıldı?", a: "2006" },
-  { q: "En uzun süre yaşayan canlı türü hangisidir?", a: "Deniz kestanesi (Ocean quahog)" },
-  { q: "Yunan mitolojisinde yer altı tanrısı kimdir?", a: "Hades" },
-  { q: "Dünyanın en büyük gölü hangisidir?", a: "Hazar Gölü" },
-  { q: "İlk insanlı uzay uçuşunu gerçekleştiren kimdir?", a: "Yuri Gagarin" },
-  { q: "Mona Lisa tablosunu kim yapmıştır?", a: "Leonardo da Vinci" },
-  Mona Lisa tablosu hangi müzede sergileniyor?", a: "Louvre" },
-{ q: "Van Gogh hangi tabloda geceyi tasvir etti?", a: "Yıldızlı Gece" },
-{ q: "Michelangelo Sistine Şapeli tavanını hangi şehirde boyadı?", a: "Roma" },
-{ q: "Leonardo da Vinci'nin ünlü son akşam yemeği tablosu hangi şehirde?", a: "Milano" },
-{ q: "Picasso hangi akımı başlatmıştır?", a: "Kübizm" },
+  { q: "İlk yapay zeka programı kim tarafından yazıldı?", a: "Alan Turing" },
+  { q: "Hangi gezegen kendi ekseni etrafında en hızlı döner?", a: "Jüpiter" },
+  { q: "Hangi ülke iki kıta üzerinde bulunur?", a: "Türkiye" },
+  { q: "Hangi yılda internet halka açıldı?", a: "1991" },
+  { q: "En uzun insan kası hangisidir?", a: "Sartorius" },
+  { q: "Hangi gezegenin uydusu Titan’dır?", a: "Satürn" },
+  { q: "Bir kilometre kaç metredir?", a: "1000" },
+  { q: "En küçük gezegen hangisidir?", a: "Merkür" },
+  { q: "Hangi element sıvı halde bulunur oda sıcaklığında?", a: "Cıva" },
+  { q: "İlk modern olimpiyatlar hangi yılda başladı?", a: "1896" },
+  { q: "İnsan vücudundaki toplam kemik sayısı kaçtır?", a: "206" },
+  { q: "Hangi gezegenin halkaları yoktur?", a: "Mars" },
+  { q: "Dünyanın en derin gölü hangisidir?", a: "Baykal" },
+  { q: "İlk cep telefonu hangi yılda icat edildi?", a: "1973" },
+  { q: "Hangi elementin sembolü O'dur?", a: "Oksijen" },
+  { q: "İlk yapay uydu hangisidir?", a: "Sputnik 1" },
+  { q: "Hangi hayvanın dili mavi renktedir?", a: "Takasugu (Mavi balina)" },
+  { q: "Picasso hangi akımı başlatmıştır?", a: "Kübizm" },
 { q: "Salvador Dali’nin eriyen saatlerini tasvir ettiği tablo nedir?", a: "Azrailin Belleği" },
 { q: "Claude Monet’nin bahçesini resmettiği ünlü eser serisi nedir?", a: "Nilüferler" },
 { q: "Rembrandt hangi ülkede yaşamıştır?", a: "Hollanda" },
@@ -139,128 +121,62 @@ const questions = [
 { q: "Damien Hirst hangi tür eserleriyle ünlüdür?", a: "Kontemprorary heykel" },
 { q: "Jeff Koons hangi popüler heykeli yaptı?", a: "Balon Köpek" },
 { q: "Yayoi Kusama hangi temaları işler?", a: "Noktalar ve sonsuzluk" },
-{ q: "Takashi Murakami hangi renkleri sıkça kullanır?", a: "Parlak renkler" },
+  { q: "En uzun süre tahtta kalan İngiliz monark kimdir?", a: "Kraliçe II. Elizabeth" },
+  { q: "Güneş’te hangi gaz en fazla bulunur?", a: "Hidrojen" },
+  { q: "Dünyanın en büyük gölü hangisidir?", a: "Hazar Gölü" },
+  { q: "Mona Lisa tablosunu kim yapmıştır?", a: "Leonardo da Vinci" },
+  { q: "Bir ışık yılı kaç kilometredir?", a: "9.461 trilyon km" },
+  { q: "İlk insanlı uzay uçuşunu gerçekleştiren kimdir?", a: "Yuri Gagarin" },
+  { q: "Dünyadaki en hızlı kara hayvanı hangisidir?", a: "Çita" },
 ];
 
-let currentQuestion = null;
-let answered = false;
-let questionTimer = null;
-
-function sendNextQuestion() {
+// Soruyu gönderme fonksiyonu
+function sendNextQuestion(io) {
   answered = false;
-  currentQuestion = questions[questionIndex];
+
+  // Rastgele soru seç
+  let nextQuestion;
+  do {
+    nextQuestion = questions[Math.floor(Math.random() * questions.length)];
+  } while (currentQuestion && nextQuestion.q === currentQuestion.q);
+
+  currentQuestion = nextQuestion;
 
   io.emit("chatMessage", {
     username: BOT_NAME,
     role: "bot",
     content: "Hazırsanız soru geliyor: " + currentQuestion.q,
-    time: new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})
+    time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
   });
 
-  questionTimer = setTimeout(() => {
-    if(!answered){
-      io.emit("chatMessage",{
+  currentTimeout = setTimeout(() => {
+    if (!answered) {
+      io.emit("chatMessage", {
         username: BOT_NAME,
         role: "bot",
         content: "Süre doldu! Doğru cevap: " + currentQuestion.a,
-        time: new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})
+        time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
       });
     }
-    questionIndex = (questionIndex + 1) % questions.length;
-    sendNextQuestion();
+    sendNextQuestion(io);
   }, QUESTION_INTERVAL);
 }
 
-// =====================
-// SOCKET.IO BAĞLANTI
-// =====================
-io.on("connection",(socket)=>{
-  console.log("🟢 Bağlandı:", socket.id);
+// Cevap kontrolü (chatMessage event içinde)
+function checkAnswer(msg, io) {
+  if (currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()) {
+    answered = true;
 
-  socket.emit("users", users);
-  socket.emit("initMessages", messages);
-
-  socket.on("join",({username,password})=>{
-    if(username === "LoverBoy"){
-      if(users.some(u=>u.username==="LoverBoy")){
-        socket.emit("joinError","LoverBoy nicki zaten kullanılıyor!");
-        return;
-      }
-      if(password !== "3530657Ynz"){
-        socket.emit("joinError","LoverBoy şifresi hatalı!");
-        return;
-      }
-    }
-    const user={
-      id: socket.id,
-      username,
-      role: username==="LoverBoy"?"admin":"user"
-    };
-    users.push(user);
-    io.emit("users",users);
-    io.emit("chatMessage",{
-      username:"Sistem",
-      role:"admin",
-      content:`${username} sohbete katıldı 👋`,
-      time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})
+    io.emit("chatMessage", {
+      username: BOT_NAME,
+      role: "bot",
+      content: `Tebrikler ${msg.username}! Doğru cevabı bildiniz 🎉`,
+      time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
     });
-  });
 
-  socket.on("chatMessage",(msg)=>{
-    if(bannedWords.some(word=>msg.content.toLowerCase().includes(word))){
-      socket.emit("kicked",{reason:"Küfür kullandığınız için atıldınız."});
-      socket.disconnect();
-      return;
-    }
-
-    // Quiz cevabı kontrolü
-    if(currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()){
-      answered = true;
-      io.emit("chatMessage",{
-        username: BOT_NAME,
-        role:"bot",
-        content:`Tebrikler ${msg.username}! Doğru cevabı bildiniz 🎉`,
-        time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})
-      });
-      clearTimeout(questionTimer);
-      setTimeout(sendNextQuestion, QUESTION_INTERVAL);
-      return;
-    }
-
-    messages.push(msg);
-    io.emit("chatMessage",msg);
-  });
-
-  socket.on("kickUser",(userId)=>{
-    const adminUser = users.find(u=>u.id===socket.id && u.role==="admin");
-    if(!adminUser) return;
-    const target = users.find(u=>u.id===userId);
-    if(target){
-      io.to(userId).emit("kicked",{reason:"Admin tarafından atıldınız."});
-      io.sockets.sockets.get(userId)?.disconnect();
-    }
-  });
-
-  socket.on("disconnect",()=>{
-    const user=users.find(u=>u.id===socket.id);
-    if(user){
-      users=users.filter(u=>u.id!==socket.id);
-      io.emit("users",users);
-      io.emit("chatMessage",{
-        username:"Sistem",
-        role:"admin",
-        content:`${user.username} sohbetten ayrıldı 🚪`,
-        time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})
-      });
-    }
-    console.log("🔴 Ayrıldı:",socket.id);
-  });
-});
-
-// =====================
-// BOTU BAŞLAT
-// =====================
-sendNextQuestion();
-
-const PORT = process.env.PORT || 10000;
-server.listen(PORT,()=>console.log(`Server ${PORT} portunda çalışıyor`));
+    clearTimeout(currentTimeout);
+    setTimeout(() => sendNextQuestion(io), QUESTION_INTERVAL);
+    return true;
+  }
+  return false;
+}
