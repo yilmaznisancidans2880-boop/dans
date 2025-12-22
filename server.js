@@ -27,17 +27,23 @@ let messages = [];
 const bannedWords = ["küfür1","küfür2","argo1"];
 
 // =====================
-// Sevimli-Pisicik BOT AYARLARI
+// Sevimli-Kedicik BOT AYARLARI
 // =====================
-const BOT_NAME = "Sevimli-Pisicik";
+const BOT_NAME = "Sevimli-Kedicik";
 const QUESTION_INTERVAL = 15000; // 15 saniye
 
+// 300 soruluk örnek, sen dilediğin kadar ekleyebilirsin
 const questions = [
   { q: "İnsan DNA'sında kaç baz çifti bulunur?", a: "3 milyar" },
   { q: "Dünyada en uzun süre tahtta kalan monark kimdir?", a: "louis xiv" },
   { q: "Einstein'ın izafiyet teorisini hangi yılda yayınladı?", a: "1905" },
   { q: "İnsan vücudundaki en büyük organ hangisidir?", a: "Cilt" },
-  { q: "Plüton gezegeni hangi yılda gezegen statüsünden çıkarıldı?", a: "2006" }
+  { q: "Plüton gezegeni hangi yılda gezegen statüsünden çıkarıldı?", a: "2006" },
+  { q: "Okyanusların en derin noktası neresidir?", a: "Mariana Çukuru" },
+  { q: "Dünya üzerindeki en büyük çöl hangisidir?", a: "Sahara" },
+  { q: "İlk bilgisayar programcısı kimdir?", a: "Ada Lovelace" },
+  { q: "Hidrojenin atom numarası kaçtır?", a: "1" },
+  { q: "Fotosentez sırasında hangi gaz açığa çıkar?", a: "Oksijen" },
   { q: "En uzun süre yaşayan canlı türü hangisidir?", a: "Deniz kestanesi (Ocean quahog)" },
   { q: "Yunan mitolojisinde yer altı tanrısı kimdir?", a: "Hades" },
   { q: "Dünyanın en büyük gölü hangisidir?", a: "Hazar Gölü" },
@@ -240,6 +246,7 @@ const questions = [
   { q: "İlk bilgisayar programcısı kimdir?", a: "Ada Lovelace" },
   { q: "Hidrojenin atom numarası kaçtır?", a: "1" },
   { q: "Fotosentez sırasında hangi gaz açığa çıkar?", a: "Oksijen" }
+
 ];
 
 let currentIndex = -1;
@@ -250,7 +257,7 @@ let answered = false;
 // =====================
 function askNextQuestion() {
   currentIndex++;
-  if(currentIndex >= questions.length) currentIndex = 0; // sorular sırayla dönsün
+  if(currentIndex >= questions.length) currentIndex = 0; // sırayla dönsün
 
   const question = questions[currentIndex];
   answered = false;
@@ -258,7 +265,7 @@ function askNextQuestion() {
   io.emit("chatMessage", {
     username: BOT_NAME,
     role: "bot",
-    content: "Hazırsanız diğer  soru geliyor: " + question.q,
+    content: "Hazırsanız soru geliyor: " + question.q,
     time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
   });
 
@@ -321,8 +328,8 @@ io.on("connection", (socket) => {
     }
 
     // Quiz cevabı kontrol
-    const currentQuestion = questions[currentIndex];
-    if(currentQuestion && !answered && msg.content.toLowerCase() === currentQuestion.a.toLowerCase()){
+    const question = questions[currentIndex];
+    if(question && !answered && msg.content.toLowerCase() === question.a.toLowerCase()){
       answered = true;
       io.emit("chatMessage", {
         username: BOT_NAME,
