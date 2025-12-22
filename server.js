@@ -27,18 +27,17 @@ let messages = [];
 const bannedWords = ["küfür1","küfür2","argo1"];
 
 // =====================
-// QUIZ BOT AYARLARI
+// Sevimli-Pisicik BOT AYARLARI
 // =====================
 const BOT_NAME = "Sevimli-Pisicik";
 const QUESTION_INTERVAL = 15000; // 15 saniye
 
-// 100 soru örneği (örnek birkaçını ekledim, sen dilediğin kadar ekleyebilirsin)
 const questions = [
   { q: "İnsan DNA'sında kaç baz çifti bulunur?", a: "3 milyar" },
   { q: "Dünyada en uzun süre tahtta kalan monark kimdir?", a: "louis xiv" },
   { q: "Einstein'ın izafiyet teorisini hangi yılda yayınladı?", a: "1905" },
   { q: "İnsan vücudundaki en büyük organ hangisidir?", a: "Cilt" },
-  { q: "Plüton gezegeni hangi yılda gezegen statüsünden çıkarıldı?", a: "2006" },
+  { q: "Plüton gezegeni hangi yılda gezegen statüsünden çıkarıldı?", a: "2006" }
   { q: "En uzun süre yaşayan canlı türü hangisidir?", a: "Deniz kestanesi (Ocean quahog)" },
   { q: "Yunan mitolojisinde yer altı tanrısı kimdir?", a: "Hades" },
   { q: "Dünyanın en büyük gölü hangisidir?", a: "Hazar Gölü" },
@@ -259,7 +258,7 @@ function askNextQuestion() {
   io.emit("chatMessage", {
     username: BOT_NAME,
     role: "bot",
-    content: "Hazırsanız soru geliyor: " + question.q,
+    content: "Hazırsanız diğer  soru geliyor: " + question.q,
     time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
   });
 
