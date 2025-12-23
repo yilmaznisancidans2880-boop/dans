@@ -10,7 +10,7 @@ app.use(cors());
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: { origin: "https://www.turkgptchat.com" },
 });
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -22,7 +22,6 @@ app.get("/", (req, res) => {
 // kullanıcı ve mesaj listesi
 let users = [];
 let messages = [];
-
 // yasaklı kelimeler
 const bannedWords = ["küfür1","küfür2","argo1"];
 
@@ -301,6 +300,7 @@ function getTurkeyTime() {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false
+  });
 }
 
 // botlar arası sohbet için fonksiyon
@@ -405,6 +405,7 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
+
 
 
 
