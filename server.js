@@ -216,15 +216,15 @@ const botMessages = [
   "Luna enerjisiyle dikkat çekiyor",
   "Eli sessiz ama yerinde",
   "Paisley konuşurken ortamı yumuşatıyor"
-];
 
-// Türkiye saati fonksiyonu
 function getTurkeyTime() {
-  const now = new Date();
-  now.setHours(now.getHours() + 3); // UTC+3
-  return now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return new Date().toLocaleTimeString("tr-TR", {
+    timeZone: "Europe/Istanbul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
 }
-
 // bot kullanıcılarını ekle
 botNames.forEach(name => {
   users.push({ id: `bot_${name}`, username: name, role: "bot" });
