@@ -188,9 +188,8 @@ const botMessages = [
   "Hunter net ve açık konuşuyor",
   "Luna enerjisiyle dikkat çekiyor",
   "Eli sessiz ama yerinde",
-  "Paisley konuşurken ortamı yumuşatıyor"
-  "Arkadaşlarla sohbet etmek çok keyifli.", "Gününüz güzel geçsin!", 
-  "Yeni bir hobiye başlamak istiyorum.", "Bu sohbet çok keyifli, teşekkürler!"
+  "Paisley konuşurken ortamı yumuşatıyor",
+  "Yeni bir hobiye başlamak istiyorum.",
   "Sebastian kendinden emin duruyor",
   "Aria ortama renk katıyor",
   "David fazla konuşmasa da etkili",
@@ -406,5 +405,6 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
+
 
 
