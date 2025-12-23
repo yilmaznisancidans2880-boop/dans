@@ -88,7 +88,6 @@ const botMessages = [
   "Yeni bir oyun oynamayı düşündünüz mü?", "Müziğin ruh halimizi değiştirdiğine inanıyorum.", 
   "Bugün kendimi çok enerjik hissediyorum.", "Hafta sonu planınız hazır mı?", 
   "Film izlemek için öneriniz var mı?", "Bazen sadece kahve molası yeterli oluyor.", 
-  "İpek bugün enerjin gerçekten çok güzel, böyle devam et 🌸",
   "Ozan biraz sessiz ama belli ki kafasında çok şey var",
   "Deniz her zamanki gibi ortama neşe katıyor",
   "Elif senin gülüşün bile buraya yansıyor gibi 😊",
@@ -407,4 +406,5 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
+
 
