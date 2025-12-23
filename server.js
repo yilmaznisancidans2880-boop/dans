@@ -26,7 +26,7 @@ let messages = [];
 // yasaklı kelimeler
 const bannedWords = ["küfür1","küfür2","argo1"];
 
-// bot listesi (Türkçe isimler)
+// bot listesi (Türkçe ve yabancı isimler karışık, 100 adet)
 const botNames = [
   "Deniz", "Elif", "Mert", "Ayşe", "Can", "Zeynep", "Emre", "Seda", "Baran", "Ece",
   "Kerem", "Selin", "Tunç", "Derya", "Yasemin", "Berk", "Melis", "Kaan", "Aylin", "Onur",
@@ -40,9 +40,9 @@ const botNames = [
   "Ryan", "Ruby", "Christian", "Alice", "Jonathan", "Sadie", "Hunter", "Luna", "Eli", "Paisley"
 ];
 
-// bot mesajları
+// bot mesajları (194 tane, doğal sohbet havası)
 const botMessages = [
- "Selam nasılsınız?", "Bugün hava çok güzel değil mi?", "Yeni bir şarkı keşfettim!", 
+  "Selam nasılsınız?", "Bugün hava çok güzel değil mi?", "Yeni bir şarkı keşfettim!", 
   "Dans etmeyi sever misiniz?", "Herkese iyi akşamlar!", "Film öneriniz var mı?", 
   "Son zamanlarda ne izlediniz?", "Merhaba!", "Gününüz nasıl geçiyor?", "Bu sohbet harika!",
   "Ben kahve mi çay mı tercih ediyorsunuz merak ediyorum.", "Bence bu hafta çok hızlı geçti.", 
@@ -88,6 +88,108 @@ const botMessages = [
   "Yeni bir oyun oynamayı düşündünüz mü?", "Müziğin ruh halimizi değiştirdiğine inanıyorum.", 
   "Bugün kendimi çok enerjik hissediyorum.", "Hafta sonu planınız hazır mı?", 
   "Film izlemek için öneriniz var mı?", "Bazen sadece kahve molası yeterli oluyor.", 
+   "İpek bugün enerjin gerçekten çok güzel, böyle devam et 🌸",
+  "Ozan biraz sessiz ama belli ki kafasında çok şey var",
+  "Deniz her zamanki gibi ortama neşe katıyor",
+  "Elif senin gülüşün bile buraya yansıyor gibi 😊",
+  "Mert bugün baya keyifli görünüyor",
+  "Ayşe sakinliğiyle insanı rahatlatıyor",
+  "Can konuşmasa bile varlığı yetiyor",
+  "Zeynep yine pozitifliğini konuşturmuş",
+  "Emre her zamanki gibi düşünceli",
+  "Seda enerjisiyle sohbeti canlandırıyor",
+  "Baran bugün biraz dalgın sanki",
+  "Ece neşesini hiç kaybetmiyor",
+  "Kerem lafı uzatmadan net konuşuyor",
+  "Selin ortamı çok güzel toparlıyor",
+  "Tunç her zamanki gibi kendinden emin",
+  "Derya konuşunca insan dinlemek istiyor",
+  "Yasemin çok nazik cümleler kuruyor",
+  "Berk biraz yorgun ama yine de burada",
+  "Melis’in enerjisi bulaşıcı gerçekten",
+  "Kaan sessiz ama derin biri",
+  "Aylin pozitifliğiyle ortamı yumuşatıyor",
+  "Onur her zaman mantıklı yaklaşıyor",
+  "Cem yine güzel bir konu açmış",
+  "İpek senin bu enerjini koruman lazım",
+  "Burak her zamanki gibi rahat",
+  "Gamze gülünce ortam aydınlanıyor",
+  "Arda bugün biraz düşünceli",
+  "Funda sakinliğiyle iyi geliyor",
+  "Ege’nin muhabbeti ayrı bir keyif",
+  "Nazlı detayları iyi yakalıyor",
+  "Ozan bazen sessiz kalıyor ama içi dolu",
+  "Selma konuşurken insanı yormuyor",
+  "Liam bugün baya enerjik",
+  "Emma sohbeti güzel yönlendiriyor",
+  "Noah sakin ama net",
+  "Olivia her zamanki gibi pozitif",
+  "Aiden ortamın havasını değiştirdi",
+  "Sophia çok zarif konuşuyor",
+  "Lucas lafı tam yerinde söylüyor",
+  "Mia enerjisiyle dikkat çekiyor",
+  "Ethan düşünmeden konuşmuyor",
+  "Isabella sohbeti yumuşatıyor",
+  "Mason bugün biraz dalgın",
+  "Charlotte her zamanki gibi nazik",
+  "Logan lafı uzatmadan anlatıyor",
+  "Amelia ortamı toparlıyor",
+  "James netliğiyle öne çıkıyor",
+  "Harper enerjisiyle fark yaratıyor",
+  "Benjamin bugün keyifli belli",
+  "Evelyn konuşurken insan dinlemek istiyor",
+  "Jacob sakinliğiyle iyi geliyor",
+  "Abigail pozitifliğiyle ortamı ısıtıyor",
+  "Michael her zamanki gibi ciddi",
+  "Emily sohbeti tatlı hale getiriyor",
+  "Alexander kendinden emin duruyor",
+  "Ella güleryüzlü mesajlar atıyor",
+  "Daniel biraz yorgun ama burada",
+  "Scarlett çok güzel ifade ediyor kendini",
+  "Matthew ortamı iyi gözlemliyor",
+  "Grace konuşurken huzur veriyor",
+  "Henry lafı dolandırmıyor",
+  "Chloe enerjisiyle dikkat çekiyor",
+  "William her zamanki gibi ağır başlı",
+  "Victoria çok zarif bir üslup kullanıyor",
+  "Jackson net ve açık konuşuyor",
+  "Lily sohbeti yumuşatıyor",
+  "Sebastian kendinden emin duruyor",
+  "Aria ortama renk katıyor",
+  "David fazla konuşmasa da etkili",
+  "Hannah pozitifliğiyle fark ediliyor",
+  "Joseph sakinliğiyle denge sağlıyor",
+  "Zoe enerjisiyle sohbeti canlandırıyor",
+  "Samuel biraz düşünceli ama iyi",
+  "Nora çok samimi konuşuyor",
+  "Owen ortamı iyi takip ediyor",
+  "Aurora çok tatlı bir enerji yayıyor",
+  "Gabriel konuşurken güven veriyor",
+  "Penelope detaylara dikkat ediyor",
+  "Carter sohbeti hareketlendirdi",
+  "Hazel çok sıcak konuşuyor",
+  "Wyatt net ve sade",
+  "Violet enerjisiyle fark yaratıyor",
+  "Dylan rahat tavrıyla iyi gidiyor",
+  "Claire konuşurken yormuyor",
+  "Leo sessiz ama güçlü",
+  "Stella pozitifliğiyle ortamı yumuşatıyor",
+  "Nathan lafı uzatmadan anlatıyor",
+  "Addison enerjisiyle dikkat çekiyor",
+  "Julian sakinliğiyle denge kuruyor",
+  "Lucy çok tatlı mesajlar atıyor",
+  "Caleb bugün keyifli görünüyor",
+  "Elena konuşurken samimi",
+  "Ryan rahat tavrıyla iyi gidiyor",
+  "Ruby enerjisiyle ortamı canlandırıyor",
+  "Christian düşünerek konuşuyor",
+  "Alice çok nazik bir üslup kullanıyor",
+  "Jonathan sakinliğiyle fark ediliyor",
+  "Sadie güleryüzlü mesajlar yazıyor",
+  "Hunter net ve açık konuşuyor",
+  "Luna enerjisiyle dikkat çekiyor",
+  "Eli sessiz ama yerinde",
+  "Paisley konuşurken ortamı yumuşatıyor"
   "Arkadaşlarla sohbet etmek çok keyifli.", "Gününüz güzel geçsin!", 
   "Yeni bir hobiye başlamak istiyorum.", "Bu sohbet çok keyifli, teşekkürler!"
 ];
@@ -96,6 +198,13 @@ const botMessages = [
 botNames.forEach(name => {
   users.push({ id: `bot_${name}`, username: name, role: "bot" });
 });
+
+// Türkiye saati fonksiyonu
+function getTurkeyTime() {
+  const now = new Date();
+  now.setHours(now.getHours() + 3); // UTC+3
+  return now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
 
 // botlar arası sohbet için fonksiyon
 function randomBotChat() {
@@ -108,7 +217,7 @@ function randomBotChat() {
     username: botUser.username,
     role: "bot",
     content: botMessage,
-    time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+    time: getTurkeyTime()
   };
 
   messages.push(msg);
@@ -152,7 +261,7 @@ io.on("connection", (socket) => {
       username: "Sistem",
       role: "admin",
       content: `${username} sohbete katıldı 👋`,
-      time: new Date().toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" })
+      time: getTurkeyTime()
     });
   });
 
@@ -163,7 +272,7 @@ io.on("connection", (socket) => {
       return;
     }
     messages.push(msg);
-    io.emit("chatMessage", msg);
+    io.emit("chatMessage", { ...msg, time: getTurkeyTime() });
   });
 
   socket.on("kickUser", (userId) => {
@@ -186,7 +295,7 @@ io.on("connection", (socket) => {
         username:"Sistem",
         role:"admin",
         content:`${user.username} sohbetten ayrıldı 🚪`,
-        time: new Date().toLocaleTimeString("tr-TR",{ hour:"2-digit", minute:"2-digit" })
+        time: getTurkeyTime()
       });
     }
     console.log("🔴 Ayrıldı:", socket.id);
