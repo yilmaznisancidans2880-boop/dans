@@ -26,7 +26,7 @@ let messages = [];
 // yasaklı kelimeler
 const bannedWords = ["küfür1","küfür2","argo1"];
 
-// bot listesi (Türkçe ve yabancı isimler karışık, 100 adet)
+// bot listesi (Türkçe ve yabancı isimler karışık)
 const botNames = [
   "Deniz", "Elif", "Mert", "Ayşe", "Can", "Zeynep", "Emre", "Seda", "Baran", "Ece",
   "Kerem", "Selin", "Tunç", "Derya", "Yasemin", "Berk", "Melis", "Kaan", "Aylin", "Onur",
@@ -40,9 +40,12 @@ const botNames = [
   "Ryan", "Ruby", "Christian", "Alice", "Jonathan", "Sadie", "Hunter", "Luna", "Eli", "Paisley"
 ];
 
-// bot mesajları (194 tane, doğal sohbet havası)
+// bot mesajları (218 adet doğal sohbet havası)
 const botMessages = [
-  "Selam nasılsınız?", "Bugün hava çok güzel değil mi?", "Yeni bir şarkı keşfettim!", 
+  "İpek bugün enerjin gerçekten çok güzel, böyle devam et 🌸",
+  "Ozan biraz sessiz ama belli ki kafasında çok şey var",
+  "Deniz her zamanki gibi ortama neşe katıyor",
+    "Selam nasılsınız?", "Bugün hava çok güzel değil mi?", "Yeni bir şarkı keşfettim!", 
   "Dans etmeyi sever misiniz?", "Herkese iyi akşamlar!", "Film öneriniz var mı?", 
   "Son zamanlarda ne izlediniz?", "Merhaba!", "Gününüz nasıl geçiyor?", "Bu sohbet harika!",
   "Ben kahve mi çay mı tercih ediyorsunuz merak ediyorum.", "Bence bu hafta çok hızlı geçti.", 
@@ -91,6 +94,29 @@ const botMessages = [
    "İpek bugün enerjin gerçekten çok güzel, böyle devam et 🌸",
   "Ozan biraz sessiz ama belli ki kafasında çok şey var",
   "Deniz her zamanki gibi ortama neşe katıyor",
+  "Elif senin gülüşün bile buraya yansıyor gibi 😊",
+  "Mert bugün baya keyifli görünüyor",
+  "Ayşe sakinliğiyle insanı rahatlatıyor",
+  "Can konuşmasa bile varlığı yetiyor",
+  "Zeynep yine pozitifliğini konuşturmuş",
+  "Emre her zamanki gibi düşünceli",
+  "Seda enerjisiyle sohbeti canlandırıyor",
+  "Baran bugün biraz dalgın sanki",
+  "Ece neşesini hiç kaybetmiyor",
+  "Kerem lafı uzatmadan net konuşuyor",
+  "Selin ortamı çok güzel toparlıyor",
+  "Tunç her zamanki gibi kendinden emin",
+  "Derya konuşunca insan dinlemek istiyor",
+  "Yasemin çok nazik cümleler kuruyor",
+  "Berk biraz yorgun ama yine de burada",
+  "Melis’in enerjisi bulaşıcı gerçekten",
+  "Kaan sessiz ama derin biri",
+  "Aylin pozitifliğiyle ortamı yumuşatıyor",
+  "Onur her zaman mantıklı yaklaşıyor",
+  "Cem yine güzel bir konu açmış",
+  "İpek senin bu enerjini koruman lazım",
+  "Burak her zamanki gibi rahat",
+  "Gamze gülünce ortam aydınlanıyor",
   "Elif senin gülüşün bile buraya yansıyor gibi 😊",
   "Mert bugün baya keyifli görünüyor",
   "Ayşe sakinliğiyle insanı rahatlatıyor",
@@ -190,14 +216,7 @@ const botMessages = [
   "Luna enerjisiyle dikkat çekiyor",
   "Eli sessiz ama yerinde",
   "Paisley konuşurken ortamı yumuşatıyor"
-  "Arkadaşlarla sohbet etmek çok keyifli.", "Gününüz güzel geçsin!", 
-  "Yeni bir hobiye başlamak istiyorum.", "Bu sohbet çok keyifli, teşekkürler!"
 ];
-
-// bot kullanıcılarını ekle
-botNames.forEach(name => {
-  users.push({ id: `bot_${name}`, username: name, role: "bot" });
-});
 
 // Türkiye saati fonksiyonu
 function getTurkeyTime() {
@@ -206,7 +225,12 @@ function getTurkeyTime() {
   return now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-// botlar arası sohbet için fonksiyon
+// bot kullanıcılarını ekle
+botNames.forEach(name => {
+  users.push({ id: `bot_${name}`, username: name, role: "bot" });
+});
+
+// botlar arası sohbet
 function randomBotChat() {
   if(users.filter(u => u.role === "bot").length === 0) return;
 
@@ -223,8 +247,7 @@ function randomBotChat() {
   messages.push(msg);
   io.emit("chatMessage", msg);
 
-  // bot mesajlarını 5-15 saniye arası tekrar et
-  setTimeout(randomBotChat, Math.floor(Math.random() * 10000) + 5000);
+  setTimeout(randomBotChat, Math.floor(Math.random() * 10000) + 5000); // 5-15 saniye
 }
 
 // ilk bot sohbetini başlat
@@ -237,7 +260,6 @@ io.on("connection", (socket) => {
   socket.emit("initMessages", messages);
 
   socket.on("join", ({ username, password }) => {
-    // LoverBoy kontrolü
     if(username === "LoverBoy") {
       if(users.some(u => u.username === "LoverBoy")) {
         socket.emit("joinError", "LoverBoy nicki zaten kullanılıyor!");
@@ -249,11 +271,7 @@ io.on("connection", (socket) => {
       }
     }
 
-    const user = {
-      id: socket.id,
-      username,
-      role: username === "LoverBoy" ? "admin" : "user"
-    };
+    const user = { id: socket.id, username, role: username === "LoverBoy" ? "admin" : "user" };
     users.push(user);
 
     io.emit("users", users);
