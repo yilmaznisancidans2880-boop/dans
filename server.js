@@ -355,7 +355,9 @@ io.on("connection", (socket) => {
     };
     users.push(user);
 
+    // Her kullanıcı giriş yaptığında tüm kullanıcıları güncelle
     io.emit("users", users);
+
     io.emit("chatMessage", {
       username: "Sistem",
       role: "admin",
@@ -389,7 +391,9 @@ io.on("connection", (socket) => {
     const user = users.find(u => u.id === socket.id);
     if(user) {
       users = users.filter(u => u.id !== socket.id);
+      // Çıkınca da tüm kullanıcıları güncelle
       io.emit("users", users);
+
       io.emit("chatMessage", {
         username:"Sistem",
         role:"admin",
@@ -403,4 +407,3 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
-
