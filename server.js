@@ -303,7 +303,7 @@ function getTurkeyTime() {
   });
 }
 
-// botlar arası sohbet
+// botlar arası sohbet için fonksiyon
 function randomBotChat() {
   if(users.filter(u => u.role === "bot").length === 0) return;
 
@@ -320,14 +320,13 @@ function randomBotChat() {
   messages.push(msg);
   io.emit("chatMessage", msg);
 
+  // bot mesajlarını 5-15 saniye arası tekrar et
   setTimeout(randomBotChat, Math.floor(Math.random() * 10000) + 5000);
 }
 
+// ilk bot sohbetini başlat
 setTimeout(randomBotChat, 5000);
 
-// =====================
-// SOCKET CONNECTION
-// =====================
 io.on("connection", (socket) => {
   console.log("🟢 Bağlandı:", socket.id);
 
@@ -335,7 +334,7 @@ io.on("connection", (socket) => {
   socket.emit("initMessages", messages);
 
   socket.on("join", ({ username, password }) => {
-
+    // LoverBoy kontrolü
     if(username === "LoverBoy") {
       if(users.some(u => u.username === "LoverBoy")) {
         socket.emit("joinError", "LoverBoy nicki zaten kullanılıyor!");
@@ -352,8 +351,9 @@ io.on("connection", (socket) => {
       username,
       role: username === "LoverBoy" ? "admin" : "user"
     };
-
     users.push(user);
+
+    // Her kullanıcı giriş yaptığında tüm kullanıcıları güncelle
     io.emit("users", users);
 
     io.emit("chatMessage", {
@@ -370,7 +370,6 @@ io.on("connection", (socket) => {
       socket.disconnect();
       return;
     }
-
     messages.push(msg);
     io.emit("chatMessage", { ...msg, time: getTurkeyTime() });
   });
@@ -386,41 +385,11 @@ io.on("connection", (socket) => {
     }
   });
 
-  // =====================
-  // 🎥 WEBRTC 1'e 1 VIDEO SIGNALING
-  // =====================
-  socket.on("video-offer", ({ targetId, offer }) => {
-    io.to(targetId).emit("video-offer", {
-      from: socket.id,
-      offer
-    });
-  });
-
-  socket.on("video-answer", ({ targetId, answer }) => {
-    io.to(targetId).emit("video-answer", {
-      from: socket.id,
-      answer
-    });
-  });
-
-  socket.on("ice-candidate", ({ targetId, candidate }) => {
-    io.to(targetId).emit("ice-candidate", {
-      from: socket.id,
-      candidate
-    });
-  });
-
-  socket.on("end-call", ({ targetId }) => {
-    io.to(targetId).emit("end-call");
-  });
-
-  // =====================
-  // DISCONNECT
-  // =====================
   socket.on("disconnect", () => {
     const user = users.find(u => u.id === socket.id);
     if(user) {
       users = users.filter(u => u.id !== socket.id);
+      // Çıkınca da tüm kullanıcıları güncelle
       io.emit("users", users);
 
       io.emit("chatMessage", {
@@ -436,3 +405,5 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`Server ${PORT} portunda çalışıyor`));
+
+
